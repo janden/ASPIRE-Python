@@ -244,11 +244,11 @@ class FFBBasis3D(FBBasis3D):
 
     def evaluate_t(self, x):
         """
-        Evaluate coefficient in FB basis from those in standard 3D coordinate basis
+        Evaluate volume array in dual FB basis
 
-        :param x: The coefficient array in the standard 3D coordinate basis
-            to be evaluated. The first three dimensions must equal `self.sz`.
-        :return v: The evaluation of the coefficient array `v` in the FB basis.
+        :param x: The volume array in the standard 3D coordinate basis to be
+            evaluated. The first three dimensions must equal `self.sz`.
+        :return v: The evaluation of the volume array `x` in the FB basis.
             This is an array of vectors whose first dimension equals
             `self.count` and whose remaining dimensions correspond to higher
             dimensions of `x`.
@@ -343,17 +343,17 @@ class FFBBasis3D(FBBasis3D):
     def expand(self, x):
 
         """
-        Obtain expansion coefficients in FB basis from those in standard 3D coordinate basis
+        Obtain expansion coefficients in FB basis from volume array
 
         This is a similar function to evaluate_t but with more accuracy by using
         the cg optimizing of linear equation, Ax=b.
 
-        :param x: An array whose first three dimensions are to be expanded in FB basis.
-             These dimensions must equal `self.sz`.
-        :return : The coefficients of `v` expanded in FB basis. The first dimension
-            of `v` is with size of `count` and the second and higher dimensions
-            of the return value correspond to those higher dimensions of `x`.
-
+        :param x: A volume array whose first three dimensions are to be
+            expanded in FB basis. These dimensions must equal `self.sz`.
+        :return : The coefficients of `x` expanded in FB basis. The first
+            dimension of `x` is with size of `count` and the second and higher
+            dimensions of the return value correspond to those higher
+            dimensions of `x`.
         """
         # TODO: this is function could be move to base class if all standard and fast versions of 2d and 3d are using
         #       the same data structures of x and v.

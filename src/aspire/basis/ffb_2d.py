@@ -172,9 +172,9 @@ class FFBBasis2D(FBBasis2D):
 
     def evaluate_t(self, x):
         """
-        Evaluate coefficient in FB basis from those in standard 2D coordinate basis
+        Evaluate image array in FB basis
 
-        :param x: The coefficient array in the standard 2D coordinate basis to be
+        :param x: The image array in the standard 2D coordinate basis to be
             evaluated. The first two dimensions must equal `self.sz`.
         :return v: The evaluation of the coefficient array `v` in the FB basis.
             This is an array of vectors whose first dimension equals `self.count`
@@ -249,15 +249,15 @@ class FFBBasis2D(FBBasis2D):
 
     def expand(self, x):
         """
-        Obtain coefficients in FB basis from those in standard 2D coordinate basis
+        Obtain coefficients in FB basis from an image array
 
         This is a similar function to evaluate_t but with more accuracy by using
         the cg optimizing of linear equation, Ax=b.
 
-        :param x: An array whose first two dimensions are to be expanded in FB basis.
-             These dimensions must equal `self.sz`.
-        :return : The coefficients of `v` expanded in FB basis. The first dimension
-            of `v` is with size of `count` and the second and higher dimensions
+        :param x: An image array whose first two dimensions are to be expanded
+            in FB basis. These dimensions must equal `self.sz`.
+        :return : The coefficients of `x` expanded in FB basis. The first dimension
+            of `x` is with size of `count` and the second and higher dimensions
             of the return value correspond to those higher dimensions of `x`.
 
         """

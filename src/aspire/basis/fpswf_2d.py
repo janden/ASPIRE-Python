@@ -95,11 +95,11 @@ class FPSWFBasis2D(PSWFBasis2D):
 
     def evaluate_t(self, images):
         """
-        Evaluate coefficient vectors in PSWF basis using the fast method
+        Evaluate image arrays vectors in the dual PSWF basis
 
-        :param images: coefficient array in the standard 2D coordinate basis
-            to be evaluated.
-        :return : The evaluation of the coefficient array in the PSWF basis.
+        :param images: Image array in the standard 2D coordinate basis to be
+            evaluated.
+        :return : The evaluation of the image array in the dual PSWF basis.
         """
         # start and finish are for the threads option in the future
         images_shape = images.shape

@@ -108,16 +108,15 @@ class Basis:
         """
         raise NotImplementedError('subclasses must implement this')
 
-    def evaluate_t(self, v):
+    def evaluate_t(self, x):
         """
-        Evaluate coefficient in dual basis
+        Evaluate array in dual basis
 
-        :param v: The coefficient array to be evaluated. The first dimensions
-            must equal `self.sz`.
-        :return: The evaluation of the coefficient array `v` in the dual
-            basis of `basis`.
+        :param x: The array to be evaluated. The first dimensions must equal
+            `self.sz`.
+        :return: The evaluation of the array `x` in the dual basis of `basis`.
             This is an array of vectors whose first dimension equals `self.count`
-            and whose remaining dimensions correspond to higher dimensions of `v`.
+            and whose remaining dimensions correspond to higher dimensions of `x`.
         """
         raise NotImplementedError('Subclasses should implement this')
 
@@ -135,21 +134,21 @@ class Basis:
 
     def mat_evaluate_t(self, X):
         """
-        Evaluate coefficient matrix in dual basis
+        Evaluate array matrix in dual basis
 
-        :param X: The coefficient array of size `self.sz`-by-`self.sz`
-            to be evaluated.
+        :param X: The array matrix of size `self.sz`-by-`self.sz` to be
+            evaluated.
         :return: The evaluation of `X` in the dual basis. This is
-            `self.count`-by-`self.count`. matrix.
-            If `V` is a matrix of size `self.count`-by-`self.count`,
-            `B` is the change-of-basis matrix of `basis`, and `x` is a
-            multidimensional matrix of size `basis.sz`-by-`basis.sz`, the
-            function calculates V = B' * X * B, where the rows of `B`, rows
-            of 'X', and columns of `X` are read as vectorized arrays.
+            `self.count`-by-`self.count`. matrix. If `V` is a matrix of size
+            `self.count`-by-`self.count`, `B` is the change-of-basis matrix of
+            `basis`, and `X` is a multidimensional matrix of size
+            `basis.sz`-by-`basis.sz`, the function calculates V = B' * X * B,
+            where the rows of `B`, rows of 'X', and columns of `X` are read as
+            vectorized arrays.
         """
         return mdim_mat_fun_conj(X, len(self.sz), 1, self.evaluate_t)
 
-    def expand(self, v):
+    def expand(self, x):
         """
         Expand array in basis
 
@@ -161,24 +160,24 @@ class Basis:
         the function calculates  v = (B' * B)^(-1) * B' * x, where the rows
         of `B` and columns of `x` are read as vectorized arrays.
 
-        :param v: An array whose first few dimensions are to be expanded in this basis.
+        :param x: An array whose first few dimensions are to be expanded in this basis.
             These dimensions must equal `self.sz`.
-        :return: The coefficients of `v` expanded in this basis. If more than
-            one array of size `self.sz` is found in `v`, the second and higher
-            dimensions of the return value correspond to those higher dimensions of `v`.
+        :return: The coefficients of `x` expanded in this basis. If more than
+            one array of size `self.sz` is found in `x`, the second and higher
+            dimensions of the return value correspond to those higher dimensions of `x`.
 
         """
-        ensure(v.shape[:self.ndim] == self.sz, f'First {self.ndim} dimensions of v must match {self.sz}.')
+        ensure(x.shape[:self.ndim] == self.sz, f'First {self.ndim} dimensions of x must match {self.sz}.')
 
-        v, sz_roll = unroll_dim(v, self.ndim + 1)
-        b = self.evaluate_t(v)
+        x, sz_roll = unroll_dim(x, self.ndim + 1)
+        b = self.evaluate_t(x)
         operator = LinearOperator(
             shape=(self.count, self.count),
-            matvec=lambda x: self.evaluate_t(self.evaluate(x))
+            matvec=lambda y: self.evaluate_t(self.evaluate(y))
         )
 
         # TODO: (from MATLAB implementation) - Check that this tolerance make sense for multiple columns in v
-        tol = 10 * np.finfo(v.dtype).eps
+        tol = 10 * np.finfo(x.dtype).eps
         logger.info('Expanding array in basis')
         v, info = cg(operator, b, tol=tol)
 

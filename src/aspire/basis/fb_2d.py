@@ -193,18 +193,18 @@ class FBBasis2D(Basis):
 
         return x
 
-    def evaluate_t(self, v):
+    def evaluate_t(self, x):
         """
-        Evaluate coefficient in FB basis from those in standard 2D coordinate basis
+        Evaluate image array in FB basis
 
-        :param v: The coefficient array to be evaluated. The first dimensions
-            must equal `self.sz`.
-        :return: The evaluation of the coefficient array `v` in the dual basis
-            of `basis`. This is an array of vectors whose first dimension equals
-             `self.count` and whose remaining dimensions correspond to
-             higher dimensions of `v`.
+        :param x: The image array to be evaluated. The first dimensions must
+            equal `self.sz`.
+        :return: The evaluation of the image array `x` in the dual basis of
+            `basis`. This is an array of vectors whose first dimension equals
+            `self.count` and whose remaining dimensions correspond to higher
+            dimensions of `x`.
         """
-        x, sz_roll = unroll_dim(v, self.ndim + 1)
+        x, sz_roll = unroll_dim(x, self.ndim + 1)
         x = m_reshape(x, new_shape=tuple([np.prod(self.sz)] + list(x.shape[self.ndim:])))
 
         r_idx = self.basis_coords['r_idx']

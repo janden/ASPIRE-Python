@@ -134,11 +134,11 @@ class PSWFBasis2D(Basis):
 
     def evaluate_t(self, images):
         """
-        Evaluate coefficient vectors in PSWF basis using the direct method
+        Evaluate image arrays in dual PSWF basis
 
-        :param images: coefficient array in the standard 2D coordinate basis
-            to be evaluated.
-        :return : The evaluation of the coefficient array in the PSWF basis.
+        :param images: Image array in the standard 2D coordinate basis to be
+            evaluated.
+        :return : The evaluation of the image array in the dual PSWF basis.
         """
         images_shape = images.shape
 
