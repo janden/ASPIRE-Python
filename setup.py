@@ -32,7 +32,6 @@ setup(
         "numpy==1.16",
         "pandas==0.25.3",
         "pyfftw",
-        "pynndescent",
         "pillow",
         "scipy==1.4.0",
         "scikit-learn",
@@ -60,6 +59,9 @@ setup(
             "sphinx-rtd-theme>=0.4.2",
             "snakeviz",
             "tox",
+        ],
+        "opt": [
+            "pynndescent",
         ],
     },
     package_dir={"": "src"},
