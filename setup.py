@@ -60,9 +60,6 @@ setup(
             "snakeviz",
             "tox",
         ],
-        "opt": [
-            "pynndescent",
-        ],
     },
     package_dir={"": "src"},
     packages=find_packages(where="src"),
