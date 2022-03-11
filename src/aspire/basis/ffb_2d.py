@@ -7,7 +7,7 @@ from scipy.special import jv
 from aspire.basis import FBBasis2D
 from aspire.basis.basis_utils import lgwt
 from aspire.image import Image
-from aspire.nufft import anufft, nufft
+from aspire.nufft import Plan
 from aspire.numeric import fft, xp
 from aspire.utils import complex_type
 from aspire.utils.matlab_compat import m_reshape
@@ -58,6 +58,12 @@ class FFBBasis2D(FBBasis2D):
 
         # precompute the basis functions in 2D grids
         self._precomp = self._precomp()
+
+        self.ntransforms = 4
+        n_theta = np.size(self._precomp["freqs"], 2)
+        n_r = np.size(self._precomp["freqs"], 1)
+        freqs = np.reshape(self._precomp["freqs"], (2, n_r * n_theta))
+        self.plan = Plan(self.sz, 2 * pi * freqs, ntransforms=self.ntransforms)
 
     def _precomp(self):
         """
@@ -130,7 +136,7 @@ class FFBBasis2D(FBBasis2D):
         n_r = np.size(self._precomp["freqs"], 1)
 
         # go through  each basis function and find corresponding coefficient
-        pf = np.zeros((n_data, 2 * n_theta, n_r), dtype=complex_type(self.dtype))
+        pf = np.zeros((n_data, n_r, 2 * n_theta), dtype=complex_type(self.dtype))
         mask = self._indices["ells"] == 0
 
         ind = 0
@@ -139,7 +145,7 @@ class FFBBasis2D(FBBasis2D):
 
         # include the normalization factor of angular part into radial part
         radial_norm = self._precomp["radial"] / np.expand_dims(self.angular_norms, 1)
-        pf[:, 0, :] = v[:, mask] @ radial_norm[idx]
+        pf[:, :, 0] = v[:, mask] @ radial_norm[idx]
         ind = ind + np.size(idx)
 
         ind_pos = ind
@@ -155,34 +161,40 @@ class FFBBasis2D(FBBasis2D):
                 v_ell = 1j * v_ell
 
             pf_ell = v_ell @ radial_norm[idx]
-            pf[:, ell, :] = pf_ell
+            pf[:, :, ell] = pf_ell
 
             if np.mod(ell, 2) == 0:
-                pf[:, 2 * n_theta - ell, :] = pf_ell.conjugate()
+                pf[:, :, 2 * n_theta - ell] = pf_ell.conjugate()
             else:
-                pf[:, 2 * n_theta - ell, :] = -pf_ell.conjugate()
+                pf[:, :, 2 * n_theta - ell] = -pf_ell.conjugate()
 
             ind = ind + np.size(idx)
             ind_pos = ind_pos + 2 * self.k_max[ell]
 
         # 1D inverse FFT in the degree of polar angle
-        pf = 2 * pi * xp.asnumpy(fft.ifft(xp.asarray(pf), axis=1))
+        pf = 2 * pi * xp.asnumpy(fft.ifft(xp.asarray(pf)))
 
         # Only need "positive" frequencies.
-        hsize = int(np.size(pf, 1) / 2)
-        pf = pf[:, 0:hsize, :]
+        hsize = int(np.size(pf, 2) / 2)
+        pf = pf[:, :, 0:hsize]
 
         for i_r in range(0, n_r):
-            pf[..., i_r] = pf[..., i_r] * (
+            pf[:, i_r, :] = pf[:, i_r, :] * (
                 self._precomp["gl_weights"][i_r] * self._precomp["gl_nodes"][i_r]
             )
 
         pf = np.reshape(pf, (n_data, n_r * n_theta))
 
         # perform inverse non-uniformly FFT transform back to 2D coordinate basis
-        freqs = m_reshape(self._precomp["freqs"], (2, n_r * n_theta))
-
-        x = 2 * anufft(pf, 2 * pi * freqs, self.sz, real=True)
+        ntransforms = self.ntransforms
+        plan = self.plan
+        x = np.empty((len(pf),) + self.sz, dtype=v.dtype)
+        for idx in range(int(np.ceil(len(pf) / ntransforms))):
+            num_chunk = min(len(pf) - idx, ntransforms)
+            chunk = np.zeros((ntransforms, pf.shape[1]), dtype=pf.dtype)
+            chunk[:num_chunk] = pf[idx : idx + num_chunk]
+            chunk_out = 2 * plan.adjoint(chunk).real
+            x[idx : idx + num_chunk] = chunk_out[:num_chunk]
 
         # Return X as Image instance with the last two dimensions as *self.sz
         x = x.reshape((*sz_roll, *self.sz))
@@ -216,14 +228,21 @@ class FFBBasis2D(FBBasis2D):
         # get information on polar grids from precomputed data
         n_theta = np.size(self._precomp["freqs"], 2)
         n_r = np.size(self._precomp["freqs"], 1)
-        freqs = np.reshape(self._precomp["freqs"], (2, n_r * n_theta))
 
         # number of 2D image samples
         n_images = x.n_images
         x_data = x.data
 
         # resamping x in a polar Fourier gird using nonuniform discrete Fourier transform
-        pf = nufft(x_data, 2 * pi * freqs)
+        ntransforms = self.ntransforms
+        plan = self.plan
+        pf = np.empty((n_images, n_r * n_theta), dtype=complex_type(x.dtype))
+        for idx in range(int(np.ceil(len(x_data) / ntransforms))):
+            num_chunk = min(len(x_data) - idx, ntransforms)
+            chunk = np.zeros((ntransforms,) + self.sz, dtype=complex_type(x_data.dtype))
+            chunk[:num_chunk] = x_data[idx : idx + num_chunk]
+            chunk_out = plan.transform(chunk)
+            pf[idx : idx + num_chunk] = chunk_out[:num_chunk]
         pf = np.reshape(pf, (n_images, n_r, n_theta))
 
         # Recover "negative" frequencies from "positive" half plane.
