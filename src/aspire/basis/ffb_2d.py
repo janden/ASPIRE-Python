@@ -63,7 +63,8 @@ class FFBBasis2D(FBBasis2D):
         n_theta = np.size(self._precomp["freqs"], 2)
         n_r = np.size(self._precomp["freqs"], 1)
         freqs = np.reshape(self._precomp["freqs"], (2, n_r * n_theta))
-        self.plan = Plan(self.sz, 2 * pi * freqs, ntransforms=self.ntransforms)
+        self.plan = Plan(self.sz, 2 * pi * freqs,
+                ntransforms=self.ntransforms, epsilon=self.epsilon)
 
     def _precomp(self):
         """

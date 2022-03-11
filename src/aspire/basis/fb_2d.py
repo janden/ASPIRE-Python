@@ -24,7 +24,7 @@ class FBBasis2D(SteerableBasis2D):
     """
 
     # TODO: Methods that return dictionaries should return useful objects instead
-    def __init__(self, size, ell_max=None, dtype=np.float32):
+    def __init__(self, size, ell_max=None, dtype=np.float32, epsilon=1e-8):
         """
         Initialize an object for the 2D Fourier-Bessel basis class
 
@@ -39,6 +39,7 @@ class FBBasis2D(SteerableBasis2D):
         ndim = len(size)
         assert ndim == 2, "Only two-dimensional basis functions are supported."
         assert len(set(size)) == 1, "Only square domains are supported."
+        self.epsilon = epsilon
         super().__init__(size, ell_max, dtype=dtype)
 
     def _build(self):
