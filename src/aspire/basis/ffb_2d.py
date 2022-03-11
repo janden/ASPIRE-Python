@@ -59,7 +59,6 @@ class FFBBasis2D(FBBasis2D):
         # precompute the basis functions in 2D grids
         self._precomp = self._precomp()
 
-        self.ntransforms = 4
         n_theta = np.size(self._precomp["freqs"], 2)
         n_r = np.size(self._precomp["freqs"], 1)
         freqs = np.reshape(self._precomp["freqs"], (2, n_r * n_theta))
