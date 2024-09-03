@@ -60,7 +60,6 @@ jobs:
     needs: check
     runs-on: ${{ matrix.os }}
     # Only run on review ready pull_requests
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
     defaults:
       run:
         shell: bash -el {0}
@@ -93,6 +92,7 @@ jobs:
         conda info
         conda list
         pip install -e ".[dev]"
+        pip install --upgrade --pre finufft -f https://users.flatironinstitute.org/~janden/finufft-py
         pip freeze
         python -c "import numpy; numpy.show_config()"
     - name: Execute Pytest Conda ${{ matrix.os }} Python ${{ matrix.python-version }}
@@ -132,6 +132,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -e ".[dev,gpu-12x]"
+        pip install --upgrade --pre cufinufft -f https://users.flatironinstitute.org/~janden/finufft-py
     - name: Customize config
       run: |
         echo "Setup tmp dirs and chmod so others can cleanup."
