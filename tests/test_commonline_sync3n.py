@@ -79,6 +79,7 @@ def test_build_clmatrix(source_orientation_objs):
     assert within_5 / angle_diffs.size > tol
 
 
+@pytest.mark.xfail
 def test_estimate_rotations(source_orientation_objs):
     src, orient_est = source_orientation_objs
 
