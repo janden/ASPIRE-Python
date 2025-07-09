@@ -36,8 +36,10 @@ jobs:
         pip freeze
         python -c "import numpy; numpy.show_config()"
         sysctl -a
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    - name: Check architecture
+      run: |
+        echo "Architecture of current process:"
+        arch
     - name: Run tests
       run: |
         export ASPIREDIR=.
