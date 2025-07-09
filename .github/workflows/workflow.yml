@@ -12,7 +12,7 @@ jobs:
         shell: bash -el {0}
     strategy:
       matrix:
-        os: [macOS-13]
+        os: [macOS-latest]
         backend: [default]
         python-version: ['3.9']
 
@@ -35,6 +35,8 @@ jobs:
         pip freeze
         python -c "import numpy; numpy.show_config()"
         sysctl -a
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Run tests
       run: |
         export ASPIREDIR=.
